@@ -23,7 +23,7 @@ Pre-requisitos: Node versión 14.x
 
 Clonar el repositorio:
 
-		- git clone https://github.com/AntonioErdeljac/next13-spotify.git
+		- git clone https://github.com/felipevega-dev/next13-spotifyclone
 Instalar packages:
 
 		- npm i
