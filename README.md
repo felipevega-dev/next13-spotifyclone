@@ -1,4 +1,4 @@
-![image](https://github.com/felipevega-dev/spotifyclone/assets/86897009/97466029-9db3-4c05-b470-3f3b5b2aba28)
+![spotify clone](https://github.com/felipevega-dev/next13-spotifyclone/assets/86897009/45101a86-02cb-42a7-993a-15ad68485034)
 
 Este es el repositorio de un clon full stack de Spotify desarrollado con Next.js 13.4 App Router: 
 React, Tailwind, Supabase y PostgreSQL.
