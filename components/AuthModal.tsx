@@ -30,10 +30,11 @@ const AuthModal = () => {
 
     return ( 
         <Modal
-            title="Welcome back"
-            description="Login to your account"
+            title="Bienvenido!"
+            description="Inicia Sesión en tu Cuenta"
             isOpen={isOpen}
             onChange={onChange}
+            onClose={onClose}
         >
             <Auth
                 theme="dark"
@@ -50,7 +51,8 @@ const AuthModal = () => {
                     }
                 }}}
             ></Auth>
-        </Modal> );
+        </Modal> 
+        );
 }
  
 export default AuthModal;
