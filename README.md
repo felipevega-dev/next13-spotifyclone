@@ -1,6 +1,6 @@
 ![spotify clone](https://github.com/felipevega-dev/next13-spotifyclone/assets/86897009/45101a86-02cb-42a7-993a-15ad68485034)
 
-DEMO DEPLOY: https://next13-spotifyclone-5grt.vercel.app/
+DEMO DEPLOY: https://vegadev-spotifyclone.vercel.app/
 
 Este es el repositorio de un clon full stack de Spotify desarrollado con Next.js 13.4 App Router: 
 React, Tailwind, Supabase y PostgreSQL.
