@@ -7,10 +7,7 @@ import { AiFillStepBackward, AiFillStepForward } from "react-icons/ai";
 import { BiRewind, BiFastForward } from "react-icons/bi";
 
 import { Song } from "@/types";
-
-// HOOKS
 import usePlayer from "@/hooks/usePlayer";
-import useNormalizedAudio from '@/hooks/useNormalizedAudio';
 
 import LikeButton from "./LikeButton";
 import MediaItem from "./MediaItem";
@@ -20,7 +17,6 @@ interface PlayerContentProps {
   song: Song;
   songUrl: string;
 }
-
 
 const PlayerContent: React.FC<PlayerContentProps> = ({ 
   song, 
@@ -32,8 +28,6 @@ const PlayerContent: React.FC<PlayerContentProps> = ({
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [volume, setVolume] = useState(1);
-  const normalizedSongUrl = useNormalizedAudio(songUrl);
-  
 
   const Icon = isPlaying ? BsPauseFill : BsPlayFill;
   const VolumeIcon = volume === 0 ? HiSpeakerXMark : HiSpeakerWave;
@@ -133,8 +127,8 @@ const PlayerContent: React.FC<PlayerContentProps> = ({
   }
 
   return ( 
-    <div className="grid grid-cols-2 md:grid-cols-3 h-full">
-      <div className="flex w-full justify-start">
+    <div className="grid grid-cols-2 md:grid-cols-3 h-full bg-black">
+      <div className="flex w-full justify-start items-center px-4 pb-6">
         <div className="flex items-center gap-x-4">
           <MediaItem data={song} />
           <LikeButton songId={song.id} />
@@ -145,12 +139,12 @@ const PlayerContent: React.FC<PlayerContentProps> = ({
         <div className="flex items-center gap-x-6">
           <AiFillStepBackward
             onClick={onPlayPrevious}
-            size={30} 
+            size={24} 
             className="text-neutral-400 cursor-pointer hover:text-white transition"
           />
           <BiRewind
             onClick={() => handleSkip(-10)}
-            size={30}
+            size={24}
             className="text-neutral-400 cursor-pointer hover:text-white transition"
           />
           <div 
@@ -161,46 +155,47 @@ const PlayerContent: React.FC<PlayerContentProps> = ({
           </div>
           <BiFastForward
             onClick={() => handleSkip(10)}
-            size={30}
+            size={24}
             className="text-neutral-400 cursor-pointer hover:text-white transition"
           />
           <AiFillStepForward
             onClick={onPlayNext}
-            size={30} 
+            size={24} 
             className="text-neutral-400 cursor-pointer hover:text-white transition" 
           />
         </div>
-        <div className="flex items-center gap-x-2 w-full">
-          <span className="text-xs text-neutral-400">{formatTime(currentTime)}</span>
+        <div className="flex items-center gap-x-2 w-full ">
+          <span className="text-xs text-neutral-400 w-10 text-right pb-8">{formatTime(currentTime)}</span>
           <Slider 
             value={currentTime}
             onChange={handleTimeChange}
             max={duration}
-            className="w-full"
+            className="w-full pb-8"
           />
-          <span className="text-xs text-neutral-400">{formatTime(duration)}</span>
+          <span className="text-xs text-neutral-400 w-10 pb-8">{formatTime(duration)}</span>
         </div>
       </div>
 
-      <div className="hidden md:flex w-full justify-end pr-2">
-        <div className="flex items-center gap-x-2 w-[120px]">
+      <div className="hidden md:flex w-full justify-end items-center pr-4">
+        <div className="flex items-center gap-x-2 w-[120px] pb-8">
           <VolumeIcon 
             onClick={toggleMute} 
-            className="cursor-pointer" 
-            size={34} 
+            className="cursor-pointer text-neutral-400 hover:text-white transition" 
+            size={24} 
           />
           <Slider 
             value={volume} 
             onChange={handleVolumeChange}
             max={1}
             step={0.01}
+            className="w-[80px]"
           />
         </div>
       </div>
 
       <audio
         ref={audioRef}
-        src={normalizedSongUrl || songUrl}
+        src={songUrl}
         onEnded={onPlayNext}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
