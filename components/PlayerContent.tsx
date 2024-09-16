@@ -27,10 +27,9 @@ const PlayerContent: React.FC<PlayerContentProps> = ({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const [volume, setVolume] = useState(1);
 
   const Icon = isPlaying ? BsPauseFill : BsPlayFill;
-  const VolumeIcon = volume === 0 ? HiSpeakerXMark : HiSpeakerWave;
+  const VolumeIcon = player.volume === 0 ? HiSpeakerXMark : HiSpeakerWave;
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -54,9 +53,9 @@ const PlayerContent: React.FC<PlayerContentProps> = ({
   useEffect(() => {
     const audio = audioRef.current;
     if (audio) {
-      audio.volume = volume;
+      audio.volume = player.volume;
     }
-  }, [volume]);
+  }, [player.volume]);
 
   const onPlayNext = () => {
     if (player.ids.length === 0) {
@@ -98,11 +97,11 @@ const PlayerContent: React.FC<PlayerContentProps> = ({
   }
 
   const toggleMute = () => {
-    setVolume(prev => prev === 0 ? 1 : 0);
+    player.setVolume(player.volume === 0 ? 1 : 0);
   }
 
   const handleVolumeChange = (value: number) => {
-    setVolume(value);
+    player.setVolume(value);
   }
 
   const handleTimeChange = (value: number) => {
@@ -129,7 +128,7 @@ const PlayerContent: React.FC<PlayerContentProps> = ({
   return ( 
     <div className="grid grid-cols-2 md:grid-cols-3 h-full bg-black">
       <div className="flex w-full justify-start items-center px-4 pb-6">
-        <div className="flex items-center gap-x-4">
+        <div className="flex items-center gap-x-4 pb-3">
           <MediaItem data={song} />
           <LikeButton songId={song.id} />
         </div>
@@ -184,7 +183,7 @@ const PlayerContent: React.FC<PlayerContentProps> = ({
             size={24} 
           />
           <Slider 
-            value={volume} 
+            value={player.volume} 
             onChange={handleVolumeChange}
             max={1}
             step={0.01}
