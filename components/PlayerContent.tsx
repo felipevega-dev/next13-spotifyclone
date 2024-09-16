@@ -1,13 +1,16 @@
 "use client";
 
-import useSound from "use-sound";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { BsPauseFill, BsPlayFill } from "react-icons/bs";
 import { HiSpeakerWave, HiSpeakerXMark } from "react-icons/hi2";
 import { AiFillStepBackward, AiFillStepForward } from "react-icons/ai";
+import { BiRewind, BiFastForward } from "react-icons/bi";
 
 import { Song } from "@/types";
+
+// HOOKS
 import usePlayer from "@/hooks/usePlayer";
+import useNormalizedAudio from '@/hooks/useNormalizedAudio';
 
 import LikeButton from "./LikeButton";
 import MediaItem from "./MediaItem";
@@ -18,15 +21,48 @@ interface PlayerContentProps {
   songUrl: string;
 }
 
+
 const PlayerContent: React.FC<PlayerContentProps> = ({ 
   song, 
   songUrl
 }) => {
   const player = usePlayer();
   const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [volume, setVolume] = useState(1);
+  const normalizedSongUrl = useNormalizedAudio(songUrl);
+  
 
   const Icon = isPlaying ? BsPauseFill : BsPlayFill;
-  const VolumeIcon = player.volume === 0 ? HiSpeakerXMark : HiSpeakerWave;
+  const VolumeIcon = volume === 0 ? HiSpeakerXMark : HiSpeakerWave;
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const updateTime = () => setCurrentTime(audio.currentTime);
+    const setAudioData = () => {
+      setDuration(audio.duration);
+      setCurrentTime(audio.currentTime);
+    };
+
+    audio.addEventListener('timeupdate', updateTime);
+    audio.addEventListener('loadeddata', setAudioData);
+
+    return () => {
+      audio.removeEventListener('timeupdate', updateTime);
+      audio.removeEventListener('loadeddata', setAudioData);
+    };
+  }, []);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.volume = volume;
+    }
+  }, [volume]);
 
   const onPlayNext = () => {
     if (player.ids.length === 0) {
@@ -58,52 +94,42 @@ const PlayerContent: React.FC<PlayerContentProps> = ({
     player.setId(previousSong);
   }
 
-  const [play, { pause, sound }] = useSound(
-    songUrl,
-    { 
-      volume: player.volume,
-      onplay: () => setIsPlaying(true),
-      onend: () => {
-        setIsPlaying(false);
-        onPlayNext();
-      },
-      onpause: () => setIsPlaying(false),
-      format: ['mp3']
-    }
-  );
-
-  useEffect(() => {
-    sound?.play();
-    
-    return () => {
-      sound?.unload();
-    }
-  }, [sound]);
-
-  useEffect(() => {
-    if (sound) {
-      sound.volume(player.volume);
-    }
-  }, [sound, player.volume]);
-
   const handlePlay = () => {
     if (!isPlaying) {
-      play();
+      audioRef.current?.play();
     } else {
-      pause();
+      audioRef.current?.pause();
     }
+    setIsPlaying(!isPlaying);
   }
 
   const toggleMute = () => {
-    if (player.volume === 0) {
-      player.setVolume(1);
-    } else {
-      player.setVolume(0);
-    }
+    setVolume(prev => prev === 0 ? 1 : 0);
   }
 
   const handleVolumeChange = (value: number) => {
-    player.setVolume(value);
+    setVolume(value);
+  }
+
+  const handleTimeChange = (value: number) => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.currentTime = value;
+      setCurrentTime(value);
+    }
+  }
+
+  const handleSkip = (seconds: number) => {
+    const audio = audioRef.current;
+    if (audio) {
+      audio.currentTime += seconds;
+    }
+  }
+
+  const formatTime = (time: number) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   }
 
   return ( 
@@ -115,82 +141,45 @@ const PlayerContent: React.FC<PlayerContentProps> = ({
         </div>
       </div>
 
-      <div 
-        className="
-          flex 
-          md:hidden 
-          col-auto 
-          w-full 
-          justify-end 
-          items-center
-        "
-      >
-        <div 
-          onClick={handlePlay} 
-          className="
-            h-10
-            w-10
-            flex 
-            items-center 
-            justify-center 
-            rounded-full 
-            bg-white 
-            p-1 
-            cursor-pointer
-          "
-        >
-          <Icon size={30} className="text-black" />
+      <div className="flex flex-col items-center justify-center w-full max-w-[722px] gap-y-2">
+        <div className="flex items-center gap-x-6">
+          <AiFillStepBackward
+            onClick={onPlayPrevious}
+            size={30} 
+            className="text-neutral-400 cursor-pointer hover:text-white transition"
+          />
+          <BiRewind
+            onClick={() => handleSkip(-10)}
+            size={30}
+            className="text-neutral-400 cursor-pointer hover:text-white transition"
+          />
+          <div 
+            onClick={handlePlay} 
+            className="flex items-center justify-center h-10 w-10 rounded-full bg-white p-1 cursor-pointer"
+          >
+            <Icon size={30} className="text-black" />
+          </div>
+          <BiFastForward
+            onClick={() => handleSkip(10)}
+            size={30}
+            className="text-neutral-400 cursor-pointer hover:text-white transition"
+          />
+          <AiFillStepForward
+            onClick={onPlayNext}
+            size={30} 
+            className="text-neutral-400 cursor-pointer hover:text-white transition" 
+          />
         </div>
-      </div>
-
-      <div 
-        className="
-          hidden
-          h-full
-          md:flex 
-          justify-center 
-          items-center 
-          w-full 
-          max-w-[722px] 
-          gap-x-6
-        "
-      >
-        <AiFillStepBackward
-          onClick={onPlayPrevious}
-          size={30} 
-          className="
-            text-neutral-400 
-            cursor-pointer 
-            hover:text-white 
-            transition
-          "
-        />
-        <div 
-          onClick={handlePlay} 
-          className="
-            flex 
-            items-center 
-            justify-center
-            h-10
-            w-10 
-            rounded-full 
-            bg-white 
-            p-1 
-            cursor-pointer
-          "
-        >
-          <Icon size={30} className="text-black" />
+        <div className="flex items-center gap-x-2 w-full">
+          <span className="text-xs text-neutral-400">{formatTime(currentTime)}</span>
+          <Slider 
+            value={currentTime}
+            onChange={handleTimeChange}
+            max={duration}
+            className="w-full"
+          />
+          <span className="text-xs text-neutral-400">{formatTime(duration)}</span>
         </div>
-        <AiFillStepForward
-          onClick={onPlayNext}
-          size={30} 
-          className="
-            text-neutral-400 
-            cursor-pointer 
-            hover:text-white 
-            transition
-          " 
-        />
       </div>
 
       <div className="hidden md:flex w-full justify-end pr-2">
@@ -201,11 +190,21 @@ const PlayerContent: React.FC<PlayerContentProps> = ({
             size={34} 
           />
           <Slider 
-            value={player.volume} 
+            value={volume} 
             onChange={handleVolumeChange}
+            max={1}
+            step={0.01}
           />
         </div>
       </div>
+
+      <audio
+        ref={audioRef}
+        src={normalizedSongUrl || songUrl}
+        onEnded={onPlayNext}
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+      />
     </div>
    );
 }
